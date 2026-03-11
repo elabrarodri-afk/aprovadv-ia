@@ -11,10 +11,10 @@ const T = {
   text: "#E8E9F0",
   textMuted: "#6B7094",
   textDim: "#4A4E6A",
-  accent: "#7C5CFC",
-  accentLight: "#9B7FFD",
-  accentGlow: "rgba(124, 92, 252, 0.15)",
-  accentGlowStrong: "rgba(124, 92, 252, 0.25)",
+  accent: "#D72638",
+  accentLight: "#FF4F5E",
+  accentGlow: "rgba(215, 38, 56, 0.15)",
+  accentGlowStrong: "rgba(215, 38, 56, 0.25)",
   green: "#34D399",
   greenBg: "rgba(52, 211, 153, 0.08)",
   greenBorder: "rgba(52, 211, 153, 0.25)",
@@ -89,18 +89,17 @@ const QUICK_PROMPTS = {
 
 // ─── CLAUDE API ──────────────────────────────────────────
 async function askClaude(messages, systemPrompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + import.meta.env.VITE_OPENAI_KEY },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 1500,
-      system: systemPrompt,
-      messages: messages,
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
     }),
   });
   const data = await res.json();
-  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+  return data.choices?.[0]?.message?.content || "";
 }
 
 function buildSystemPrompt(materia, mode) {
@@ -215,7 +214,7 @@ function MessageBubble({ msg }) {
       <div style={{
         width: 34, height: 34, borderRadius: 10, flexShrink: 0,
         background: isUser
-          ? `linear-gradient(135deg, #4F46E5, ${T.accent})`
+          ? `linear-gradient(135deg, #B91C1C, ${T.accent})`
           : `linear-gradient(135deg, ${T.accent}, ${T.accentLight})`,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: isUser ? 13 : 14, fontWeight: 800, color: "#fff",

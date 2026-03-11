@@ -11,10 +11,10 @@ const T = {
   text: "#E8E9F0",
   textMuted: "#6B7094",
   textDim: "#4A4E6A",
-  accent: "#7C5CFC",
-  accentLight: "#9B7FFD",
-  accentGlow: "rgba(124, 92, 252, 0.15)",
-  accentGlowStrong: "rgba(124, 92, 252, 0.25)",
+  accent: "#D72638",
+  accentLight: "#FF4F5E",
+  accentGlow: "rgba(215, 38, 56, 0.15)",
+  accentGlowStrong: "rgba(215, 38, 56, 0.25)",
   green: "#34D399",
   greenBg: "rgba(52, 211, 153, 0.08)",
   greenBorder: "rgba(52, 211, 153, 0.25)",
@@ -88,13 +88,13 @@ const PERIODOS_ESTUDO = [
 
 // ─── CLAUDE API ──────────────────────────────────────────
 async function askClaude(sys, user, maxTokens = 2000) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: maxTokens, system: sys, messages: [{ role: "user", content: user }] }),
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + import.meta.env.VITE_OPENAI_KEY },
+    body: JSON.stringify({ model: "gpt-4o-mini", max_tokens: maxTokens, messages: [{ role: "system", content: sys }, { role: "user", content: user }] }),
   });
   const data = await res.json();
-  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+  return data.choices?.[0]?.message?.content || "";
 }
 
 async function generateStudyPlan(profile) {
@@ -262,7 +262,7 @@ function SliderInput({ label, value, onChange, min, max, step = 1, suffix = "", 
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
           background: ${T.accent}; border: 3px solid ${T.bg}; cursor: pointer;
-          box-shadow: 0 2px 8px rgba(124,92,252,0.3);
+          box-shadow: 0 2px 8px rgba(215,38,56,0.3);
         }
       `}</style>
     </div>

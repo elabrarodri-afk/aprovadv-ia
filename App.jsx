@@ -1,15 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { T } from "./theme";
 
 // Page imports
-import LandingPage from "./pages/Landing";
-import DashboardPage from "./pages/Dashboard";
-import QuestoesPage from "./pages/Questoes";
-import SimuladoPage from "./pages/Simulado";
-import FlashcardsPage from "./pages/Flashcards";
-import TutorPage from "./pages/Tutor";
-import CronogramaPage from "./pages/Cronograma";
+import LandingPage from "./Landing";
+import DashboardPage from "./Dashboard";
+import QuestoesPage from "./Questoes";
+import SimuladoPage from "./Simulado";
+import FlashcardsPage from "./Flashcards";
+import TutorPage from "./Tutor";
+import CronogramaPage from "./Cronograma";
+import AdminPage from "./Admin";
+import CadastroPage from "./Cadastro";
+
+// ─── Helper: dados do usuário ─────────────────────────────
+function getUsuario() {
+  try { return JSON.parse(localStorage.getItem("aprovadv_usuario")) || null; }
+  catch { return null; }
+}
+
+// ─── Sidebar: info do usuário ─────────────────────────────
+function SidebarUser({ collapsed }) {
+  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(getUsuario());
+
+  useEffect(() => {
+    const onStorage = () => setUsuario(getUsuario());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const nome = usuario?.nome || "Visitante";
+  const iniciais = nome.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+  const subtitulo = usuario?.meta || "Plano Free";
+
+  const sair = () => {
+    localStorage.removeItem("aprovadv_usuario");
+    navigate("/");
+  };
+
+  return (
+    <div style={{
+      padding: collapsed ? "14px 8px" : "14px 14px 10px",
+      borderTop: `1px solid ${T.border}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: collapsed ? "center" : "flex-start" }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: "50%",
+          background: `linear-gradient(135deg, ${T.accent}, ${T.accentLight})`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0,
+        }}>{iniciais}</div>
+        {!collapsed && (
+          <div style={{ overflow: "hidden", flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nome.split(" ")[0]} {nome.split(" ")[1] || ""}</div>
+            <div style={{ fontSize: 10, color: T.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{subtitulo}</div>
+          </div>
+        )}
+      </div>
+      {!collapsed && (
+        <button onClick={sair} style={{
+          marginTop: 8, width: "100%", padding: "6px", borderRadius: 8,
+          border: `1px solid ${T.border}`, background: "transparent",
+          color: T.textMuted, cursor: "pointer", fontSize: 11, fontFamily: "inherit",
+          transition: "color 0.15s",
+        }}
+          onMouseEnter={e => e.currentTarget.style.color = T.red}
+          onMouseLeave={e => e.currentTarget.style.color = T.textMuted}
+        >Sair</button>
+      )}
+    </div>
+  );
+}
 
 // ─── Sidebar ─────────────────────────────────────────────
 function Sidebar({ collapsed, setCollapsed }) {
@@ -48,12 +110,11 @@ function Sidebar({ collapsed, setCollapsed }) {
       }}>
         <div style={{
           width: 34, height: 34, borderRadius: 10,
-          background: `linear-gradient(135deg, ${T.accent}, ${T.accentLight})`,
+          overflow: "hidden",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 15, fontWeight: 900, color: "#fff", flexShrink: 0,
-          cursor: "pointer",
+          flexShrink: 0, cursor: "pointer",
         }} onClick={() => setCollapsed(!collapsed)}>
-          A
+          <img src="/logo.aprovadv.jpg" alt="AprovAdv" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
         {!collapsed && (
           <div>
@@ -100,25 +161,7 @@ function Sidebar({ collapsed, setCollapsed }) {
       </nav>
 
       {/* User */}
-      <div style={{
-        padding: collapsed ? "14px 8px" : "14px",
-        borderTop: `1px solid ${T.border}`,
-        display: "flex", alignItems: "center", gap: 10,
-        justifyContent: collapsed ? "center" : "flex-start",
-      }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: "50%",
-          background: `linear-gradient(135deg, #4F46E5, ${T.accent})`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0,
-        }}>MF</div>
-        {!collapsed && (
-          <div style={{ overflow: "hidden" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>Maria Fernanda</div>
-            <div style={{ fontSize: 10, color: T.textMuted }}>Plano Pro</div>
-          </div>
-        )}
-      </div>
+      <SidebarUser collapsed={collapsed} />
     </div>
   );
 }
@@ -161,6 +204,12 @@ export default function App() {
         <Route path="/app/flashcards" element={<AppLayout><FlashcardsPage /></AppLayout>} />
         <Route path="/app/tutor" element={<AppLayout><TutorPage /></AppLayout>} />
         <Route path="/app/cronograma" element={<AppLayout><CronogramaPage /></AppLayout>} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminPage />} />
+
+        {/* Cadastro */}
+        <Route path="/cadastro" element={<CadastroPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<LandingPage />} />

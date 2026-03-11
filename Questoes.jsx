@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { salvarQuestao, getSessaoLocal } from "./supabase";
 
 // ─── THEME ───────────────────────────────────────────────
 const T = {
@@ -11,10 +12,10 @@ const T = {
   text: "#E8E9F0",
   textMuted: "#6B7094",
   textDim: "#4A4E6A",
-  accent: "#7C5CFC",
-  accentLight: "#9B7FFD",
-  accentGlow: "rgba(124, 92, 252, 0.15)",
-  accentGlowStrong: "rgba(124, 92, 252, 0.25)",
+  accent: "#D72638",
+  accentLight: "#FF4F5E",
+  accentGlow: "rgba(215, 38, 56, 0.15)",
+  accentGlowStrong: "rgba(215, 38, 56, 0.25)",
   green: "#34D399",
   greenBg: "rgba(52, 211, 153, 0.08)",
   greenBorder: "rgba(52, 211, 153, 0.25)",
@@ -48,22 +49,17 @@ const TIPOS_PROVA = ["OAB", "Concurso - Magistratura", "Concurso - MP", "Concurs
 
 // ─── HELPER: call Claude API ─────────────────────────────
 async function askClaude(systemPrompt, userPrompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + import.meta.env.VITE_OPENAI_KEY },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 1000,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
+      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
     }),
   });
   const data = await res.json();
-  const text = (data.content || [])
-    .filter((b) => b.type === "text")
-    .map((b) => b.text)
-    .join("");
-  return text;
+  return data.choices?.[0]?.message?.content || "";
 }
 
 // ─── GENERATE QUESTION ───────────────────────────────────
@@ -405,6 +401,21 @@ export default function QuestionBank() {
       times: [...prev.times, elapsedTime],
     }));
 
+    // Salvar no Supabase (sem bloquear)
+    const sessao = getSessaoLocal();
+    if (sessao?.id) {
+      salvarQuestao(sessao.id, {
+        materia,
+        banca,
+        dificuldade,
+        enunciado: question.enunciado,
+        gabarito: question.gabarito,
+        respostaAluno: selected,
+        acertou: isCorrect,
+        tempoSegundos: elapsedTime,
+      }).catch(() => {}); // silencia erro de rede
+    }
+
     try {
       const exp = await explainAnswer(question, selected);
       setExplanation(exp);
@@ -413,7 +424,7 @@ export default function QuestionBank() {
     } finally {
       setLoadingExplanation(false);
     }
-  }, [selected, question, elapsedTime]);
+  }, [selected, question, elapsedTime, materia, banca, dificuldade]);
 
   const isCorrect = confirmed && selected === question?.gabarito;
   const avgTime = sessionStats.times.length > 0 ? Math.round(sessionStats.times.reduce((a, b) => a + b, 0) / sessionStats.times.length) : 0;

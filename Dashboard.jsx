@@ -10,10 +10,10 @@ const COLORS = {
   text: "#E8E9F0",
   textMuted: "#6B7094",
   textDim: "#4A4E6A",
-  accent: "#7C5CFC",
-  accentLight: "#9B7FFD",
-  accentGlow: "rgba(124, 92, 252, 0.15)",
-  accentGlowStrong: "rgba(124, 92, 252, 0.25)",
+  accent: "#D72638",
+  accentLight: "#FF4F5E",
+  accentGlow: "rgba(215, 38, 56, 0.15)",
+  accentGlowStrong: "rgba(215, 38, 56, 0.25)",
   green: "#34D399",
   greenBg: "rgba(52, 211, 153, 0.1)",
   greenBorder: "rgba(52, 211, 153, 0.2)",
@@ -250,7 +250,7 @@ function Sidebar({ active, onNav, collapsed }) {
             width: 34,
             height: 34,
             borderRadius: "50%",
-            background: `linear-gradient(135deg, #4F46E5, ${COLORS.accent})`,
+            background: `linear-gradient(135deg, #B91C1C, ${COLORS.accent})`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -260,12 +260,12 @@ function Sidebar({ active, onNav, collapsed }) {
             flexShrink: 0,
           }}
         >
-          MF
+          {getIniciais(getUsuario()?.nome)}
         </div>
         {!collapsed && (
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.text, whiteSpace: "nowrap" }}>
-              Maria Fernanda
+              {getUsuario()?.nome || "Aluno"}
             </div>
             <div style={{ fontSize: 11, color: COLORS.textMuted }}>Plano Pro</div>
           </div>
@@ -394,7 +394,7 @@ function SubjectCard({ name, progress, questions, correct, icon }) {
 // Study session card
 function SessionCard({ title, subtitle, duration, type, status }) {
   const typeColors = {
-    ai: { bg: "rgba(124, 92, 252, 0.1)", border: "rgba(124, 92, 252, 0.25)", text: COLORS.accent, icon: "✦" },
+    ai: { bg: "rgba(215, 38, 56, 0.1)", border: "rgba(215, 38, 56, 0.25)", text: COLORS.accent, icon: "✦" },
     review: { bg: COLORS.amberBg, border: "rgba(251, 191, 36, 0.25)", text: COLORS.amber, icon: "↻" },
     practice: { bg: COLORS.blueBg, border: "rgba(96, 165, 250, 0.25)", text: COLORS.blue, icon: "◇" },
     simulated: { bg: COLORS.greenBg, border: COLORS.greenBorder, text: COLORS.green, icon: "△" },
@@ -469,7 +469,7 @@ function AIInsightCard() {
   return (
     <div
       style={{
-        background: `linear-gradient(135deg, ${COLORS.bgCard} 0%, rgba(124, 92, 252, 0.06) 100%)`,
+        background: `linear-gradient(135deg, ${COLORS.bgCard} 0%, rgba(215, 38, 56, 0.06) 100%)`,
         border: `1px solid ${COLORS.accent}33`,
         borderRadius: 14,
         padding: "22px",
@@ -709,14 +709,44 @@ function LeaderboardMini() {
   );
 }
 
+// Helper: pega usuário do localStorage
+function getUsuario() {
+  try { return JSON.parse(localStorage.getItem("aprovadv_usuario")) || {}; }
+  catch { return {}; }
+}
+
+// Helper: primeiro nome
+function getPrimeiroNome(nomeCompleto) {
+  if (!nomeCompleto) return "Aluno";
+  return nomeCompleto.trim().split(" ")[0];
+}
+
+// Helper: iniciais
+function getIniciais(nomeCompleto) {
+  if (!nomeCompleto) return "A";
+  const partes = nomeCompleto.trim().split(" ").filter(Boolean);
+  if (partes.length === 1) return partes[0][0].toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+}
+
+// Helper: saudação por hora
+function getSaudacao() {
+  const h = new Date().getHours();
+  if (h < 12) return "Bom dia";
+  if (h < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
 // Main Dashboard
 export default function Dashboard() {
   const [activeNav, setActiveNav] = useState("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [usuario, setUsuario] = useState(getUsuario());
 
   useEffect(() => {
     setMounted(true);
+    setUsuario(getUsuario());
   }, []);
 
   const subjects = [
@@ -775,7 +805,7 @@ export default function Dashboard() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div>
               <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.03em" }}>
-                Bom dia, Maria! ☀️
+                {getSaudacao()}, {getPrimeiroNome(usuario?.nome)}! ☀️
               </h1>
               <p style={{ margin: "4px 0 0", fontSize: 13, color: COLORS.textMuted }}>
                 Segunda-feira, 9 de março · Faltam <strong style={{ color: COLORS.amber }}>47 dias</strong> para a prova

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Scroll-triggered visibility hook ────────────────────
 function useInView(threshold = 0.15) {
@@ -27,7 +28,7 @@ function Section({ children, delay = 0 }) {
 
 // ─── DATA ────────────────────────────────────────────────
 const FEATURES = [
-  { icon: "◇", title: "Banco de Questões com IA", desc: "Questões geradas por IA no estilo FGV, CESPE e mais. Correção detalhada de cada alternativa com fundamentação legal.", color: "#7C5CFC" },
+  { icon: "◇", title: "Banco de Questões com IA", desc: "Questões geradas por IA no estilo FGV, CESPE e mais. Correção detalhada de cada alternativa com fundamentação legal.", color: "#D72638" },
   { icon: "△", title: "Simulados 1ª e 2ª Fase", desc: "Prova completa com timer, gabarito e correção por IA. Inclui peça prático-profissional com análise de estrutura.", color: "#22D3EE" },
   { icon: "↻", title: "Flashcards Inteligentes", desc: "Repetição espaçada com algoritmo SM-2. Cards gerados por IA com macetes, fundamentação e explicação sob demanda.", color: "#34D399" },
   { icon: "✦", title: "IA Tutor 24h", desc: "Professor particular de Direito disponível a qualquer hora. 6 modos: explicação, caso prático, quiz, debate, mapa mental.", color: "#FBBF24" },
@@ -100,6 +101,7 @@ const STATS = [
 
 // ─── COMPONENT ───────────────────────────────────────────
 export default function LandingPage() {
+  const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -111,8 +113,8 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const accent = "#7C5CFC";
-  const accentLight = "#9B7FFD";
+  const accent = "#D72638";
+  const accentLight = "#FF4F5E";
 
   return (
     <div style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif", background: "#0A0B0F", color: "#E8E9F0", overflowX: "hidden" }}>
@@ -146,7 +148,9 @@ export default function LandingPage() {
         transition: "all 0.4s ease",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${accent}, ${accentLight})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#fff" }}>A</div>
+          <div style={{ width: 36, height: 36, borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <img src="/logo.aprovadv.jpg" alt="AprovAdv" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
           <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em" }}>AprovAdv<span style={{ color: accent, fontSize: 12, fontWeight: 700 }}>.IA</span></span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
@@ -158,16 +162,16 @@ export default function LandingPage() {
               {item}
             </a>
           ))}
-          <a href="#planos" style={{
+          <button onClick={() => navigate("/cadastro")} style={{
             padding: "9px 22px", borderRadius: 10, fontSize: 13, fontWeight: 700,
             background: `linear-gradient(135deg, ${accent}, ${accentLight})`, color: "#fff",
             boxShadow: `0 4px 20px ${accent}33`, cursor: "pointer",
-            transition: "transform 0.2s, box-shadow 0.2s",
+            transition: "transform 0.2s, box-shadow 0.2s", border: "none", fontFamily: "inherit",
           }}
-            onMouseEnter={(e) => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = `0 6px 28px ${accent}44`; }}
-            onMouseLeave={(e) => { e.target.style.transform = "none"; e.target.style.boxShadow = `0 4px 20px ${accent}33`; }}>
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = `0 6px 28px ${accent}44`; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = `0 4px 20px ${accent}33`; }}>
             Começar grátis
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -215,15 +219,15 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: "flex", gap: 14, justifyContent: "center", animation: "fadeUp 0.8s ease 0.4s both" }}>
-            <a href="#planos" style={{
+            <button onClick={() => navigate("/cadastro")} style={{
               padding: "16px 36px", borderRadius: 14, fontSize: 16, fontWeight: 700,
               background: `linear-gradient(135deg, ${accent}, ${accentLight})`, color: "#fff",
               boxShadow: `0 8px 40px ${accent}33`,
               cursor: "pointer", transition: "all 0.3s ease", display: "inline-flex", alignItems: "center", gap: 8,
-              animation: "glow 3s ease infinite",
+              animation: "glow 3s ease infinite", border: "none", fontFamily: "inherit",
             }}>
               ✦ Começar grátis — 7 dias
-            </a>
+            </button>
             <a href="#como-funciona" style={{
               padding: "16px 28px", borderRadius: 14, fontSize: 15, fontWeight: 600,
               background: "transparent", border: "1px solid #1E2030", color: "#6B7094",
@@ -426,8 +430,8 @@ export default function LandingPage() {
                         </div>
                       ))}
                     </div>
-                    <button style={{
-                      padding: "14px", borderRadius: 12, border: "none", width: "100%",
+                    <button onClick={() => navigate("/cadastro")} style={{
+                      padding: "14px", borderRadius: 12, width: "100%",
                       background: plan.popular ? `linear-gradient(135deg, ${accent}, ${accentLight})` : "transparent",
                       border: plan.popular ? "none" : "1px solid #2A2D42",
                       color: plan.popular ? "#fff" : "#9CA0B8",
@@ -435,8 +439,8 @@ export default function LandingPage() {
                       boxShadow: plan.popular ? `0 4px 24px ${accent}33` : "none",
                       transition: "all 0.2s ease",
                     }}
-                      onMouseEnter={(e) => { if (!plan.popular) { e.target.style.borderColor = accent; e.target.style.color = "#E8E9F0"; } }}
-                      onMouseLeave={(e) => { if (!plan.popular) { e.target.style.borderColor = "#2A2D42"; e.target.style.color = "#9CA0B8"; } }}>
+                      onMouseEnter={(e) => { if (!plan.popular) { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = "#E8E9F0"; } }}
+                      onMouseLeave={(e) => { if (!plan.popular) { e.currentTarget.style.borderColor = "#2A2D42"; e.currentTarget.style.color = "#9CA0B8"; } }}>
                       {plan.cta}
                     </button>
                   </div>
@@ -506,15 +510,15 @@ export default function LandingPage() {
               Junte-se a milhares de candidatos que já estão usando IA para estudar de forma mais inteligente. 
               7 dias grátis, sem cartão de crédito.
             </p>
-            <a href="#planos" style={{
+            <button onClick={() => navigate("/cadastro")} style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "18px 40px", borderRadius: 14, fontSize: 17, fontWeight: 800,
               background: `linear-gradient(135deg, ${accent}, ${accentLight})`, color: "#fff",
               boxShadow: `0 8px 40px ${accent}33`,
-              cursor: "pointer", animation: "glow 3s ease infinite",
+              cursor: "pointer", animation: "glow 3s ease infinite", border: "none", fontFamily: "inherit",
             }}>
               ✦ Começar grátis agora
-            </a>
+            </button>
             <div style={{ marginTop: 16, fontSize: 13, color: "#4A4E6A" }}>Sem cartão · Cancele quando quiser</div>
           </div>
         </Section>
@@ -525,7 +529,9 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 40 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg, ${accent}, ${accentLight})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: "#fff" }}>A</div>
+              <div style={{ width: 32, height: 32, borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <img src="/logo.aprovadv.jpg" alt="AprovAdv" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
               <span style={{ fontSize: 15, fontWeight: 800 }}>AprovAdv<span style={{ color: accent, fontSize: 11 }}>.IA</span></span>
             </div>
             <p style={{ fontSize: 13, color: "#4A4E6A", maxWidth: 280, lineHeight: 1.6 }}>

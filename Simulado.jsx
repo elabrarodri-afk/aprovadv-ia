@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { salvarSimulado, getSessaoLocal } from "./supabase";
 
 // ─── THEME ───────────────────────────────────────────────
 const T = {
@@ -11,10 +12,10 @@ const T = {
   text: "#E8E9F0",
   textMuted: "#6B7094",
   textDim: "#4A4E6A",
-  accent: "#7C5CFC",
-  accentLight: "#9B7FFD",
-  accentGlow: "rgba(124, 92, 252, 0.15)",
-  accentGlowStrong: "rgba(124, 92, 252, 0.25)",
+  accent: "#D72638",
+  accentLight: "#FF4F5E",
+  accentGlow: "rgba(215, 38, 56, 0.15)",
+  accentGlowStrong: "rgba(215, 38, 56, 0.25)",
   green: "#34D399",
   greenBg: "rgba(52, 211, 153, 0.08)",
   greenBorder: "rgba(52, 211, 153, 0.25)",
@@ -140,18 +141,17 @@ const EXAM_PRESETS = [
 
 // ─── CLAUDE API ──────────────────────────────────────────
 async function askClaude(systemPrompt, userPrompt, maxTokens = 1000) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + import.meta.env.VITE_OPENAI_KEY },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
+      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
     }),
   });
   const data = await res.json();
-  return (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+  return data.choices?.[0]?.message?.content || "";
 }
 
 async function generateBatchQuestions(materia, qtd, banca) {
@@ -811,7 +811,22 @@ export default function SimuladoApp() {
             <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontWeight: 700 }}>Gerando simulado...</div><div style={{ fontSize: 13, color: T.textMuted, marginTop: 4 }}>{loadMateria}</div><div style={{ fontSize: 12, color: T.textDim, marginTop: 4 }}>{loadProgress}/{loadTotal}</div></div>
           </div>
         )}
-        {phase === "exam" && preset && questions.length > 0 && <ExamInProgress preset={preset} questions={questions} onFinish={(a, t) => { setAnswers(a); setTimeTaken(t); setPhase("results"); }} />}
+        {phase === "exam" && preset && questions.length > 0 && <ExamInProgress preset={preset} questions={questions} onFinish={(a, t) => {
+          setAnswers(a); setTimeTaken(t); setPhase("results");
+          // Salvar simulado no Supabase
+          const sessao = getSessaoLocal();
+          if (sessao?.id) {
+            const acertos = questions.filter((q, i) => a[i] === q.gabarito).length;
+            salvarSimulado(sessao.id, {
+              tipo: preset.label || "1ª Fase",
+              totalQuestoes: questions.length,
+              acertos,
+              nota: Number(((acertos / questions.length) * 10).toFixed(2)),
+              tempoMinutos: Math.round(t / 60),
+              respostas: questions.map((q, i) => ({ gabarito: q.gabarito, resposta: a[i], acertou: a[i] === q.gabarito })),
+            }).catch(() => {});
+          }
+        }} />}
         {phase === "results" && <ExamResults preset={preset} questions={questions} answers={answers} timeTaken={timeTaken} onRestart={() => setPhase("select")} />}
         {phase === "areaSelect" && <AreaSelect onSelect={selectArea} onBack={() => setPhase("select")} />}
         {phase === "loading2" && (
